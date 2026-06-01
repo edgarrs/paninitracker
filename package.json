@@ -1,0 +1,9 @@
+{
+  "name": "paninitracker",
+  "version": "1.0.0",
+  "description": "Panini FIFA World Cup 2026 Sticker Tracker",
+  "private": true,
+  "scripts": {
+    "dev": "python -m http.server 3000 --directory src"
+  }
+}

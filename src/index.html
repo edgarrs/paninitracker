@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a472a">
+  <title>Panini WC 2026</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header cardless">
+      <div>
+        <p class="eyebrow">Sticker Tracker</p>
+        <h1>Panini WC 2026</h1>
+      </div>
+      <label class="user-picker" for="userSelector">
+        <span class="sr-only">Select user</span>
+        <select id="userSelector" aria-label="Select user">
+          <option value="">Choose user</option>
+        </select>
+      </label>
+    </header>
+
+    <div id="statsBar" class="stats-bar" aria-live="polite">0 / 980 collected (0%) | 0 duplicates</div>
+
+    <main class="main-content">
+      <section id="quick-view" class="view active" data-view="quick">
+        <div class="panel quick-entry-panel">
+          <h2>Quick Entry</h2>
+          <form id="quickEntryForm" class="stack gap-md">
+            <input id="quickEntryInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="Enter sticker code (e.g. ARG12)">
+            <button type="submit" class="primary-btn">Add</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Recent additions</h3>
+          </div>
+          <ul id="recentAdditions" class="recent-list"></ul>
+          <div id="recentEmptyState" class="empty-state">No stickers yet! Use Quick Entry to start adding.</div>
+        </div>
+      </section>
+
+      <section id="checklist-view" class="view" data-view="checklist" hidden>
+        <div class="panel stack gap-md">
+          <h2>Checklist</h2>
+          <input id="checklistSearch" type="search" placeholder="Filter by code prefix (e.g. BRA)">
+        </div>
+        <div id="checklistSections" class="stack gap-md"></div>
+      </section>
+
+      <section id="trades-view" class="view" data-view="trades" hidden>
+        <div class="panel stack gap-md">
+          <h2>Trades</h2>
+          <div class="trade-controls">
+            <select id="tradeUser1" aria-label="First user"></select>
+            <select id="tradeUser2" aria-label="Second user"></select>
+          </div>
+          <button id="tradeCompareBtn" type="button" class="primary-btn">Compare</button>
+        </div>
+        <div id="tradeResults" class="trade-results"></div>
+      </section>
+
+      <section id="users-view" class="view" data-view="users" hidden>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Users</h2>
+          </div>
+          <div id="usersList" class="users-list"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Add User</h3>
+          <form id="addUserForm" class="stack gap-md">
+            <input id="newUserName" type="text" maxlength="40" placeholder="Name">
+            <button type="submit" class="primary-btn">Add User</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="tab-bar" aria-label="Primary">
+    <button type="button" class="tab-btn active" data-tab="quick"><span>⚡</span><span>Quick Entry</span></button>
+    <button type="button" class="tab-btn" data-tab="checklist"><span>📋</span><span>Checklist</span></button>
+    <button type="button" class="tab-btn" data-tab="trades"><span>🔄</span><span>Trades</span></button>
+    <button type="button" class="tab-btn" data-tab="users"><span>👤</span><span>Users</span></button>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="stickerActionModal" class="modal-backdrop" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stickerActionTitle">
+      <h3 id="stickerActionTitle">Sticker options</h3>
+      <p id="stickerActionText"></p>
+      <div class="stack gap-sm">
+        <button type="button" id="modalDuplicateBtn" class="primary-btn">Add duplicate</button>
+        <button type="button" id="modalRemoveBtn" class="secondary-btn">Remove sticker</button>
+        <button type="button" id="modalCancelBtn" class="ghost-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/trade.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
