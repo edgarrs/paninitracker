@@ -501,6 +501,10 @@ ul {
   z-index: 50;
 }
 
+.modal-backdrop[hidden] {
+  display: none;
+}
+
 .modal-card {
   width: min(100%, 360px);
   background: var(--card);
