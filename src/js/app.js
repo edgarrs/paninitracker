@@ -381,12 +381,13 @@
         <h3 class="section-title">${escapeHtml(sectionName)}</h3>
         ${sectionTeams.map(({ team, matchingCodes }) => {
           const expanded = filter ? true : Boolean(state.expandedTeams[team.id]);
+          const collectedCount = matchingCodes.filter((code) => getCollectionCount(code) > 0).length;
           return `
-            <article class="team-section${expanded ? ' expanded' : ''}" data-team-id="${team.id}">
-              <button type="button" class="team-toggle" data-team-toggle="${team.id}">
-                <span>${escapeHtml(team.name)}</span>
-                <span class="team-toggle-meta">${matchingCodes.length} sticker${matchingCodes.length === 1 ? '' : 's'} ${expanded ? '−' : '+'}</span>
-              </button>
+           <article class="team-section${expanded ? ' expanded' : ''}" data-team-id="${team.id}">
+             <button type="button" class="team-toggle" data-team-toggle="${team.id}">
+               <span>${escapeHtml(team.name)}</span>
+               <span class="team-toggle-meta">${collectedCount}/${matchingCodes.length} ${expanded ? '−' : '+'}</span>
+             </button>
               <div class="team-content">
                 <div class="sticker-grid">
                   ${matchingCodes.map((code) => renderStickerCell(code)).join('')}
