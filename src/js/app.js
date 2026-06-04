@@ -315,7 +315,7 @@
           teams.push({
             id: sectionName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
             name: sectionName,
-            section: /^FWC/i.test(firstCode) ? 'Special Sections' : 'Teams',
+            section: /^(FWC|00)/i.test(firstCode) ? 'Special Sections' : 'Teams',
             stickers: sectionStickers
           });
         }
