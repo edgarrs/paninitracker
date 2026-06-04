@@ -415,7 +415,7 @@
     const container = elements.duplicatesSections;
     if (!container) return;
 
-    const teams = getTeams();
+    const teams = getTeamList();
     const duplicatesByTeam = teams.map((team) => {
       const dupes = team.stickers.filter((code) => getCollectionCount(code) > 1);
       return { team, dupes };
