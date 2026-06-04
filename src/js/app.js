@@ -158,6 +158,9 @@
     if (tabName === 'trades' && window.TradeView) {
       window.TradeView.render();
     }
+    if (tabName === 'duplicates') {
+      renderDuplicates();
+    }
   }
 
   function renderUserSelector() {
@@ -408,6 +411,37 @@
       </button>`;
   }
 
+  function renderDuplicates() {
+    const container = elements.duplicatesSections;
+    if (!container) return;
+
+    const teams = getTeams();
+    const duplicatesByTeam = teams.map((team) => {
+      const dupes = team.stickers.filter((code) => getCollectionCount(code) > 1);
+      return { team, dupes };
+    }).filter(({ dupes }) => dupes.length > 0);
+
+    if (duplicatesByTeam.length === 0) {
+      container.innerHTML = '<div class="panel empty-state">No duplicates yet.</div>';
+      return;
+    }
+
+    const totalDupes = duplicatesByTeam.reduce((sum, { dupes }) => sum + dupes.length, 0);
+    container.innerHTML = `<div class="panel"><p>${totalDupes} duplicate sticker${totalDupes === 1 ? '' : 's'} across ${duplicatesByTeam.length} team${duplicatesByTeam.length === 1 ? '' : 's'}</p></div>` +
+      duplicatesByTeam.map(({ team, dupes }) => `
+        <article class="team-section expanded">
+          <div class="team-toggle">
+            <span>${escapeHtml(team.name)}</span>
+            <span class="team-toggle-meta">${dupes.length} duplicate${dupes.length === 1 ? '' : 's'}</span>
+          </div>
+          <div class="team-content">
+            <div class="sticker-grid">
+              ${dupes.map((code) => renderStickerCell(code)).join('')}
+            </div>
+          </div>
+        </article>`).join('');
+  }
+
   function openStickerModal(code) {
     state.modalStickerCode = code;
     elements.modalText.textContent = `${code} is already collected. Add another duplicate or remove one?`;
@@ -477,6 +511,7 @@
     updateStats();
     renderRecentAdditions();
     renderChecklist();
+    renderDuplicates();
     renderUsersView();
     if (window.TradeView) {
       window.TradeView.render();
@@ -657,6 +692,7 @@
     elements.recentEmptyState = document.getElementById('recentEmptyState');
     elements.checklistSearch = document.getElementById('checklistSearch');
     elements.checklistSections = document.getElementById('checklistSections');
+    elements.duplicatesSections = document.getElementById('duplicatesSections');
     elements.usersList = document.getElementById('usersList');
     elements.addUserForm = document.getElementById('addUserForm');
     elements.newUserName = document.getElementById('newUserName');

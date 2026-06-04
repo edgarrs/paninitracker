@@ -64,6 +64,13 @@
         <div id="tradeResults" class="trade-results"></div>
       </section>
 
+      <section id="duplicates-view" class="view" data-view="duplicates" hidden>
+        <div class="panel">
+          <h2>Duplicates</h2>
+        </div>
+        <div id="duplicatesSections" class="stack gap-md"></div>
+      </section>
+
       <section id="users-view" class="view" data-view="users" hidden>
         <div class="panel">
           <div class="panel-header">
@@ -84,8 +91,9 @@
   </div>
 
   <nav class="tab-bar" aria-label="Primary">
-    <button type="button" class="tab-btn active" data-tab="quick"><span>⚡</span><span>Quick Entry</span></button>
+    <button type="button" class="tab-btn active" data-tab="quick"><span>⚡</span><span>Quick</span></button>
     <button type="button" class="tab-btn" data-tab="checklist"><span>📋</span><span>Checklist</span></button>
+    <button type="button" class="tab-btn" data-tab="duplicates"><span>📑</span><span>Duplicates</span></button>
     <button type="button" class="tab-btn" data-tab="trades"><span>🔄</span><span>Trades</span></button>
     <button type="button" class="tab-btn" data-tab="users"><span>👤</span><span>Users</span></button>
   </nav>
