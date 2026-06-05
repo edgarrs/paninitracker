@@ -108,8 +108,12 @@
   }
 
   function normalizeTradeResponse(data) {
-    const give = data && Array.isArray(data.give) ? data.give : Array.isArray(data.canGive) ? data.canGive : [];
-    const get = data && Array.isArray(data.get) ? data.get : Array.isArray(data.canGet) ? data.canGet : [];
+    const give = data && (Array.isArray(data.give) ? data.give
+      : Array.isArray(data.canGive) ? data.canGive
+      : Array.isArray(data.user1Offers) ? data.user1Offers : []);
+    const get = data && (Array.isArray(data.get) ? data.get
+      : Array.isArray(data.canGet) ? data.canGet
+      : Array.isArray(data.user2Offers) ? data.user2Offers : []);
     return { give, get };
   }
 
