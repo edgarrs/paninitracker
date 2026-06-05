@@ -545,3 +545,24 @@ ul {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.user-list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-list-row .user-list-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.pin-btn {
+  font-size: 1.1rem;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

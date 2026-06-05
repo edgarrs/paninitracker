@@ -34,11 +34,11 @@
       return request('/getUsers');
     },
 
-    async createUser(name) {
+    async createUser(name, pin) {
       return request('/createUser', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name, pin: pin || '' })
       });
     },
 
@@ -48,10 +48,19 @@
     },
 
     async updateSticker(userId, stickerCode, action) {
+      const pin = sessionStorage.getItem('panini.pin.' + userId) || '';
       return request('/updateSticker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, stickerCode, action })
+        body: JSON.stringify({ userId, stickerCode, action, pin })
+      });
+    },
+
+    async setPin(userId, newPin, currentPin) {
+      return request('/setPin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, newPin, currentPin: currentPin || '' })
       });
     },
 

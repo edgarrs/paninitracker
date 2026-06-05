@@ -1,5 +1,6 @@
 const {
   collectionTableClient,
+  usersTableClient,
   ensureTables,
 } = require("../shared/tableClient");
 
@@ -66,6 +67,28 @@ module.exports = async function (context, req) {
     }
 
     await ensureTables();
+
+    // Validate PIN if the user has one set
+    try {
+      const userEntity = await usersTableClient.getEntity("user", userId);
+      if (userEntity.Pin) {
+        const pin = typeof body.pin === "string" ? body.pin.trim() : "";
+        if (pin !== userEntity.Pin) {
+          context.res = {
+            status: 403,
+            headers,
+            body: { error: "Invalid PIN." },
+          };
+          return;
+        }
+      }
+    } catch (error) {
+      if (error.statusCode === 404 || error.code === "ResourceNotFound") {
+        // User not found in table — allow operation (local-only users)
+      } else {
+        throw error;
+      }
+    }
 
     const existing = await getStickerEntity(userId, stickerCode);
 

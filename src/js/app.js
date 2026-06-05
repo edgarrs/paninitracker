@@ -183,13 +183,16 @@
     elements.usersList.innerHTML = state.users.map((user) => {
       const isActive = String(user.id) === String(state.currentUserId);
       return `
-        <button type="button" class="user-list-item${isActive ? ' active' : ''}" data-user-select="${user.id}">
-          <span>
-            <strong>${escapeHtml(user.name)}</strong>
-            <span class="user-meta">${isActive ? 'Currently selected' : 'Tap to switch'}</span>
-          </span>
-          <span aria-hidden="true">›</span>
-        </button>`;
+        <div class="user-list-row">
+          <button type="button" class="user-list-item${isActive ? ' active' : ''}" data-user-select="${user.id}">
+            <span>
+              <strong>${escapeHtml(user.name)}</strong>
+              <span class="user-meta">${isActive ? 'Currently selected' : 'Tap to switch'}</span>
+            </span>
+            <span aria-hidden="true">›</span>
+          </button>
+          <button type="button" class="ghost-btn pin-btn" data-set-pin="${user.id}" title="Set PIN">🔒</button>
+        </div>`;
     }).join('');
   }
 
@@ -496,6 +499,12 @@
       hydrateCollectionFromResponse(response, code, action);
       showToast(`${code} ${readableAction}.`);
     } catch (error) {
+      if (error.message === 'Invalid PIN.') {
+        showPinPrompt(state.currentUserId, function () {
+          persistSticker(code, action);
+        });
+        return;
+      }
       applyLocalMutation(code, action);
       showToast(`API unavailable. ${code} ${readableAction} locally only.`, 'warning');
     }
@@ -590,16 +599,22 @@
   async function handleAddUser(event) {
     event.preventDefault();
     const name = String(elements.newUserName.value || '').trim();
+    const pin = String(elements.newUserPin.value || '').trim();
 
     if (!name) {
       showToast('Enter a user name.', 'error');
       return;
     }
 
+    if (pin && !/^\d{4}$/.test(pin)) {
+      showToast('PIN must be exactly 4 digits.', 'error');
+      return;
+    }
+
     let newUser;
 
     try {
-      newUser = await window.API.createUser(name);
+      newUser = await window.API.createUser(name, pin);
     } catch (error) {
       newUser = { id: `local-${Date.now()}`, name };
       showToast('API unavailable. User saved locally only.', 'warning');
@@ -608,10 +623,45 @@
     state.users = state.users.concat([{ id: newUser.id, name: newUser.name }]);
     saveUsersCache();
     elements.newUserName.value = '';
+    elements.newUserPin.value = '';
     renderUserSelector();
     renderUsersView();
+
+    // If a PIN was set, store it in session so the user is immediately unlocked
+    if (pin) {
+      sessionStorage.setItem('panini.pin.' + newUser.id, pin);
+    }
+
     await handleUserChange(newUser.id, false);
     showToast(`${newUser.name} added.`);
+  }
+
+  // PIN prompt modal logic
+  let pinResolveCallback = null;
+
+  function showPinPrompt(userId, onSuccess) {
+    pinResolveCallback = onSuccess;
+    elements.pinModalInput.value = '';
+    elements.pinModal.hidden = false;
+    elements.pinModalInput.focus();
+  }
+
+  function closePinModal() {
+    elements.pinModal.hidden = true;
+    pinResolveCallback = null;
+  }
+
+  function showSetPinModal(userId) {
+    state._setPinUserId = userId;
+    elements.setPinCurrent.value = '';
+    elements.setPinNew.value = '';
+    elements.setPinModal.hidden = false;
+    elements.setPinNew.focus();
+  }
+
+  function closeSetPinModal() {
+    elements.setPinModal.hidden = true;
+    state._setPinUserId = null;
   }
 
   function bindEvents() {
@@ -681,6 +731,67 @@
         closeStickerModal();
       }
     });
+
+    // PIN modal events
+    elements.pinModalForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const pin = elements.pinModalInput.value.trim();
+      if (!/^\d{4}$/.test(pin)) {
+        showToast('Enter a 4-digit PIN.', 'error');
+        return;
+      }
+      sessionStorage.setItem('panini.pin.' + state.currentUserId, pin);
+      const callback = pinResolveCallback;
+      closePinModal();
+      if (callback) {
+        callback();
+      }
+    });
+
+    elements.pinModalCancelBtn.addEventListener('click', closePinModal);
+    elements.pinModal.addEventListener('click', function (event) {
+      if (event.target === elements.pinModal) {
+        closePinModal();
+      }
+    });
+
+    // Set PIN modal events
+    elements.setPinForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const userId = state._setPinUserId;
+      const currentPin = elements.setPinCurrent.value.trim();
+      const newPin = elements.setPinNew.value.trim();
+
+      if (!/^\d{4}$/.test(newPin)) {
+        showToast('New PIN must be exactly 4 digits.', 'error');
+        return;
+      }
+
+      try {
+        await window.API.setPin(userId, newPin, currentPin);
+        sessionStorage.setItem('panini.pin.' + userId, newPin);
+        closeSetPinModal();
+        showToast('PIN updated.');
+      } catch (error) {
+        showToast(error.message || 'Failed to set PIN.', 'error');
+      }
+    });
+
+    elements.setPinCancelBtn.addEventListener('click', closeSetPinModal);
+    elements.setPinModal.addEventListener('click', function (event) {
+      if (event.target === elements.setPinModal) {
+        closeSetPinModal();
+      }
+    });
+
+    // Set PIN button in users view
+    elements.usersList.addEventListener('click', function (event) {
+      const setPinBtn = event.target.closest('[data-set-pin]');
+      if (setPinBtn) {
+        showSetPinModal(setPinBtn.dataset.setPin);
+        return;
+      }
+    });
   }
 
   function cacheElements() {
@@ -696,12 +807,22 @@
     elements.usersList = document.getElementById('usersList');
     elements.addUserForm = document.getElementById('addUserForm');
     elements.newUserName = document.getElementById('newUserName');
+    elements.newUserPin = document.getElementById('newUserPin');
     elements.toast = document.getElementById('toast');
     elements.modal = document.getElementById('stickerActionModal');
     elements.modalText = document.getElementById('stickerActionText');
     elements.modalDuplicateBtn = document.getElementById('modalDuplicateBtn');
     elements.modalRemoveBtn = document.getElementById('modalRemoveBtn');
     elements.modalCancelBtn = document.getElementById('modalCancelBtn');
+    elements.pinModal = document.getElementById('pinModal');
+    elements.pinModalForm = document.getElementById('pinModalForm');
+    elements.pinModalInput = document.getElementById('pinModalInput');
+    elements.pinModalCancelBtn = document.getElementById('pinModalCancelBtn');
+    elements.setPinModal = document.getElementById('setPinModal');
+    elements.setPinForm = document.getElementById('setPinForm');
+    elements.setPinCurrent = document.getElementById('setPinCurrent');
+    elements.setPinNew = document.getElementById('setPinNew');
+    elements.setPinCancelBtn = document.getElementById('setPinCancelBtn');
   }
 
   async function initialize() {

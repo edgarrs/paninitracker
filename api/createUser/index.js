@@ -39,12 +39,26 @@ module.exports = async function (context, req) {
 
     await ensureTables();
 
+    const pin = typeof body.pin === "string" ? body.pin.trim() : "";
+    if (pin && !/^\d{4}$/.test(pin)) {
+      context.res = {
+        status: 400,
+        headers,
+        body: { error: "PIN must be exactly 4 digits." },
+      };
+      return;
+    }
+
     const id = crypto.randomUUID();
-    await usersTableClient.createEntity({
+    const entity = {
       partitionKey: "user",
       rowKey: id,
       Name: name,
-    });
+    };
+    if (pin) {
+      entity.Pin = pin;
+    }
+    await usersTableClient.createEntity(entity);
 
     context.res = {
       status: 201,

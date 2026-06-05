@@ -83,6 +83,7 @@
           <h3>Add User</h3>
           <form id="addUserForm" class="stack gap-md">
             <input id="newUserName" type="text" maxlength="40" placeholder="Name">
+            <input id="newUserPin" type="password" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="4-digit PIN (optional)">
             <button type="submit" class="primary-btn">Add User</button>
           </form>
         </div>
@@ -109,6 +110,30 @@
         <button type="button" id="modalRemoveBtn" class="secondary-btn">Remove sticker</button>
         <button type="button" id="modalCancelBtn" class="ghost-btn">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <div id="pinModal" class="modal-backdrop" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+      <h3 id="pinModalTitle">Enter PIN</h3>
+      <p id="pinModalText">This user is protected. Enter the 4-digit PIN to unlock editing.</p>
+      <form id="pinModalForm" class="stack gap-sm">
+        <input id="pinModalInput" type="password" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="4-digit PIN" autocomplete="off">
+        <button type="submit" class="primary-btn">Unlock</button>
+        <button type="button" id="pinModalCancelBtn" class="ghost-btn">Cancel (view only)</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="setPinModal" class="modal-backdrop" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="setPinModalTitle">
+      <h3 id="setPinModalTitle">Set PIN</h3>
+      <form id="setPinForm" class="stack gap-sm">
+        <input id="setPinCurrent" type="password" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="Current PIN (if any)" autocomplete="off">
+        <input id="setPinNew" type="password" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="New 4-digit PIN" autocomplete="off">
+        <button type="submit" class="primary-btn">Save PIN</button>
+        <button type="button" id="setPinCancelBtn" class="ghost-btn">Cancel</button>
+      </form>
     </div>
   </div>
 
