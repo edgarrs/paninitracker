@@ -204,12 +204,12 @@
     elements.statsBar.textContent = `${collected} / ${total} collected (${percent}%) | ${duplicates} duplicates`;
   }
 
-  function addRecentAddition(code, actionLabel) {
+  function addRecentAddition(code, actionLabel, isDuplicate) {
     if (actionLabel !== 'add') {
       return;
     }
 
-    state.recentAdditions = [{ code, addedAt: Date.now() }].concat(state.recentAdditions)
+    state.recentAdditions = [{ code, addedAt: Date.now(), isDuplicate: !!isDuplicate }].concat(state.recentAdditions)
       .slice(0, 10);
   }
 
@@ -217,7 +217,10 @@
     const items = state.recentAdditions.slice(0, 10);
     const hasItems = items.length > 0;
     elements.recentList.innerHTML = hasItems
-      ? items.map((item) => `<li class="recent-item">${escapeHtml(item.code)} <span class="user-meta">${formatRelativeTime(item.addedAt)}</span></li>`).join('')
+      ? items.map((item) => {
+          const dupBadge = item.isDuplicate ? ' <span class="dup-badge">duplicate</span>' : '';
+          return `<li class="recent-item">${escapeHtml(item.code)}${dupBadge} <span class="user-meta">${formatRelativeTime(item.addedAt)}</span></li>`;
+        }).join('')
       : '';
     elements.recentEmptyState.hidden = hasItems;
   }
@@ -477,9 +480,6 @@
   function hydrateCollectionFromResponse(response, fallbackCode, fallbackAction) {
     if (response && response.collection) {
       state.collection = normalizeCollection(response.collection);
-      if (fallbackAction === 'add') {
-        addRecentAddition(fallbackCode, fallbackAction);
-      }
       return;
     }
 
@@ -492,12 +492,14 @@
       return;
     }
 
+    const wasDuplicate = action === 'add' && getCollectionCount(code) >= 1;
     const readableAction = action === 'remove' ? 'removed' : 'added';
 
     try {
       const response = await window.API.updateSticker(state.currentUserId, code, action);
       hydrateCollectionFromResponse(response, code, action);
-      showToast(`${code} ${readableAction}.`);
+      const dupLabel = wasDuplicate ? ' (duplicate)' : '';
+      showToast(`${code} ${readableAction}${dupLabel}.`);
     } catch (error) {
       if (error.message === 'Invalid PIN.') {
         showPinPrompt(state.currentUserId, function () {
@@ -507,6 +509,10 @@
       }
       applyLocalMutation(code, action);
       showToast(`API unavailable. ${code} ${readableAction} locally only.`, 'warning');
+    }
+
+    if (action === 'add') {
+      addRecentAddition(code, action, wasDuplicate);
     }
 
     saveCollectionCache(state.currentUserId, {

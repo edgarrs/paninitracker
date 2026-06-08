@@ -566,3 +566,16 @@ ul {
   justify-content: center;
   flex-shrink: 0;
 }
+
+.dup-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--duplicate);
+  color: #fff;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 0.25rem;
+}
